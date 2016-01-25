@@ -20,7 +20,7 @@ using ESRI.ArcGIS.esriSystem;
 
 namespace ConstructionLandEvaluationSystem
 {
-    public partial class SymbologyForm : Form
+    public partial class FormSymbology : Form
     {
         esriSymbologyStyleClass pStyleClass;　　//获取显示的为点类、线类还是填充类等的，赋值给 symbologyControl 控件，然后就显示这一类符号
         public IStyleGalleryItem pStyleGalleryItem;　　//获取选择的项
@@ -29,7 +29,7 @@ namespace ConstructionLandEvaluationSystem
         bool contextMenuMoreSymbolInitiated = false;　　//判断右键菜单是否已经初始化了
         bool change = false;
 
-        public SymbologyForm(ILegendClass tempLegendClass, ILayer tempLayer)
+        public FormSymbology(ILegendClass tempLegendClass, ILayer tempLayer)
         {
             InitializeComponent();
             //this.ControlBox = false;   // 设置不出现关闭按钮
@@ -97,6 +97,8 @@ namespace ConstructionLandEvaluationSystem
             pSymbologyStyleClass.SelectItem(0);     //设置为选中状态
         }
 
+        #region      //事件
+
         //axSymbologyControl空间SymbolItem选中事件相应函数
         private void axSymbologyControl1_OnItemSelected(object sender, ISymbologyControlEvents_OnItemSelectedEvent e)
         {
@@ -129,14 +131,7 @@ namespace ConstructionLandEvaluationSystem
                 cbOutlineColor.BackColor = Color.FromArgb(pColor.Red, pColor.Green, pColor.Blue);   //边框颜色
             }
         }
-        // 预览   将 pStyleGalleryItem 反映到 picture 上
-        private void PreviewPicture()
-        {
-            ISymbologyStyleClass pSymbologyStyle = axSymbologyControl1.GetStyleClass(axSymbologyControl1.StyleClass);
-            stdole.IPictureDisp picture = pSymbologyStyle.PreviewItem(pStyleGalleryItem, pictureBox1.Width, pictureBox1.Height);　　//建立实例
-            Image image = Image.FromHbitmap(new IntPtr(picture.Handle));　　//转成 C# 支持的 Image 实例
-            pictureBox1.Image = image;
-        }
+        
         //点的大小、线的宽度、填充边框宽度变化响应事件
         private void nudWidth_ValueChanged(object sender, EventArgs e)
         {
@@ -160,12 +155,14 @@ namespace ConstructionLandEvaluationSystem
                     break;
             }
         }
+        
         //点的角度变化响应事件
         private void nudAngle_ValueChanged(object sender, EventArgs e)
         {
             ((IMarkerSymbol)pStyleGalleryItem.Item).Angle = Convert.ToDouble(nudAngle.Value);
             PreviewPicture();
         }
+        
         //更多符号按钮点击响应事件
         private void btMore_Click(object sender, EventArgs e)
         {
@@ -193,6 +190,7 @@ namespace ConstructionLandEvaluationSystem
             }
             contextMenuStrip1.Show(btMore.Location);　　　　//弹出右键菜单
         }
+        
         //右键菜单点击响应事件
         private void contextMenuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
@@ -256,6 +254,7 @@ namespace ConstructionLandEvaluationSystem
                     break;
             }
         }
+        
         //填充外边框颜色变化响应事件
         private void cbOutlineColor_MouseUp(object sender, MouseEventArgs e)
         {
@@ -275,19 +274,22 @@ namespace ConstructionLandEvaluationSystem
             ((IFillSymbol)pStyleGalleryItem.Item).Outline = pLineSymbol;
             PreviewPicture();
         }
+        
         //确认按钮点击响应事件
         private void btOK_Click(object sender, EventArgs e)
         {
             change = true;
             this.Close();
         }
+        
         //取消按钮点击响应事件
         private void btCancel_Click(object sender, EventArgs e)
         {
             change = false;
             this.Close();
         }
-
+        
+        //关闭按钮
         private void SymbologyForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!change)
@@ -297,6 +299,17 @@ namespace ConstructionLandEvaluationSystem
                 pCurrentStyleGalleryItem.Item = pLegendClass.Symbol;
                 pStyleGalleryItem = pCurrentStyleGalleryItem;
             }
+        }
+
+        #endregion
+
+        // 预览   将 pStyleGalleryItem 反映到 picture 上
+        private void PreviewPicture()
+        {
+            ISymbologyStyleClass pSymbologyStyle = axSymbologyControl1.GetStyleClass(axSymbologyControl1.StyleClass);
+            stdole.IPictureDisp picture = pSymbologyStyle.PreviewItem(pStyleGalleryItem, pictureBox1.Width, pictureBox1.Height);　　//建立实例
+            Image image = Image.FromHbitmap(new IntPtr(picture.Handle));　　//转成 C# 支持的 Image 实例
+            pictureBox1.Image = image;
         }
     }
 }

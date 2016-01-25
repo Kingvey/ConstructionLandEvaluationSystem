@@ -120,6 +120,7 @@ namespace GISManager
                 pCommand = new ControlsAddDataCommandClass();
                 pCommand.OnCreate(axMapControl.Object);
                 pCommand.OnClick();
+                
             }
             catch (Exception e)
             {

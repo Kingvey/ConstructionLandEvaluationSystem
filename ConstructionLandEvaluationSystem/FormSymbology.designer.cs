@@ -1,6 +1,6 @@
 ﻿namespace ConstructionLandEvaluationSystem
 {
-    partial class SymbologyForm
+    partial class FormSymbology
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SymbologyForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormSymbology));
             this.axSymbologyControl1 = new ESRI.ArcGIS.Controls.AxSymbologyControl();
             this.lbColor = new System.Windows.Forms.Label();
             this.lbWidth = new System.Windows.Forms.Label();

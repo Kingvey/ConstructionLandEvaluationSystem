@@ -16,6 +16,9 @@ using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Carto;
 using ESRI.ArcGIS.Output;
 using ESRI.ArcGIS.Display;
+using ESRI.ArcGIS.Geoprocessor;
+using ESRI.ArcGIS.Geoprocessing;
+using ESRI.ArcGIS.esriSystem;
 
 using DevExpress.XtraTreeList;
 using DevExpress.XtraTab;
@@ -46,7 +49,8 @@ namespace ConstructionLandEvaluationSystem
         object oIndex = null;
         #endregion
 
-        private char separator = '|'; //根目录变量间隔符
+        private char separator = '|';   //根目录变量间隔符
+        private string tempPath;    //临时文件保存目录
 
         public MainForm()
         {
@@ -57,6 +61,7 @@ namespace ConstructionLandEvaluationSystem
                 LandEvaluationBll.BindingDataTable.GetRootPathDataTable(ConfigurationManager.AppSettings["RootPathes"], separator);
             this.comboBox_RootPathSelector.ValueMember = "RootPath";
             this.comboBox_RootPathSelector.DisplayMember = "RootPath";
+            tempPath = ConfigurationManager.AppSettings["TempPath"];
             FileListReSet();
         }
         //加载主界面
@@ -70,11 +75,12 @@ namespace ConstructionLandEvaluationSystem
             pToolMenuMap = new ToolbarMenuClass(); 
             pToolMenuLayer = new ToolbarMenuClass();
             pToolMenuLayer.AddItem(new RemoveLayerCommand(), 0, 0, false, esriCommandStyles.esriCommandStyleTextOnly);
-            pToolMenuLayer.AddItem(new ZoomToLayerCommand(), 0, 1, true, esriCommandStyles.esriCommandStyleTextOnly);
-            pToolMenuLayer.AddItem(new ScaleThresholdsCommand(), 1, 2, true, esriCommandStyles.esriCommandStyleTextOnly);
-            pToolMenuLayer.AddItem(new ScaleThresholdsCommand(), 2, 3, false, esriCommandStyles.esriCommandStyleTextOnly);
-            pToolMenuLayer.AddItem(new ScaleThresholdsCommand(), 3, 4, false, esriCommandStyles.esriCommandStyleTextOnly);
-            pToolMenuLayer.AddItem(new LayerSelectableCommand(), 1, 5, true, esriCommandStyles.esriCommandStyleTextOnly);
+            pToolMenuLayer.AddItem(new OpenAttributeCommand(this.axMapControl1), 0, 1, false, esriCommandStyles.esriCommandStyleTextOnly);
+            pToolMenuLayer.AddItem(new ZoomToLayerCommand(), 0, 2, true, esriCommandStyles.esriCommandStyleTextOnly);
+            pToolMenuLayer.AddItem(new ScaleThresholdsCommand(), 1, 3, true, esriCommandStyles.esriCommandStyleTextOnly);
+            pToolMenuLayer.AddItem(new ScaleThresholdsCommand(), 2, 4, false, esriCommandStyles.esriCommandStyleTextOnly);
+            pToolMenuLayer.AddItem(new ScaleThresholdsCommand(), 3, 5, false, esriCommandStyles.esriCommandStyleTextOnly);
+            pToolMenuLayer.AddItem(new LayerSelectableCommand(), 1, 6, true, esriCommandStyles.esriCommandStyleTextOnly);
             pToolMenuLayer.SetHook(pMapControl);
             #endregion
         }
@@ -92,6 +98,8 @@ namespace ConstructionLandEvaluationSystem
         private void btn_AddLayerData_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             MapDocumentOperation.AddLayerData(this.axMapControl1);
+            this.xtraTabControl1.SelectedTabPageIndex = 1;
+            MapControl2MapRefresh();
         }
         //新建空白地图文档
         private void btn_NewMapDoc_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
@@ -165,7 +173,69 @@ namespace ConstructionLandEvaluationSystem
 
         #endregion
 
+        #region  其他事件响应函数
+
+        //关闭显示页面
+        private void xtraTabControl2_CloseButtonClick(object sender, EventArgs e)
+        {
+            if (this.xtraTabControl2.SelectedTabPageIndex == 0)
+            {
+                return; //如果是关闭主页，则返回
+            }
+            XtraTabPage tabPage = this.xtraTabControl2.SelectedTabPage;
+            this.xtraTabControl2.SelectedTabPageIndex -= 1;
+            this.xtraTabControl2.TabPages.Remove(tabPage);
+            tabPage.Dispose();
+            GC.Collect();
+        }
+
+        //地图状态栏
+        private void axMapControl1_OnMouseMove(object sender, IMapControlEvents2_OnMouseMoveEvent e)
+        {
+            // 显示当前比例尺
+            this.StatusScale.Text = " 比例尺 1:" + ((long)this.axMapControl1.MapScale).ToString();
+            // 显示当前坐标
+            this.StatusCoordinate.Text = " 当前坐标 X = " + Math.Round(e.mapX, 4).ToString() + " Y = " + Math.Round(e.mapY, 4).ToString() + " " + this.axMapControl1.MapUnits;
+        }
+
+        #endregion
+
         #region 左边栏相关事件
+        //TOCControl1鼠标点击事件，左键 符号变更，右键菜单
+        private void axTOCControl1_OnMouseUp(object sender, ITOCControlEvents_OnMouseUpEvent e)
+        {
+            this.axTOCControl1.HitTest(e.x, e.y, ref pTocItem, ref pBasicMap, ref pLayer, ref oLegendGroup, ref oIndex);
+            axMapControl1.CustomProperty = pLayer;
+            if (e.button == 1)  //符号变更
+            {
+                if (pTocItem == esriTOCControlItem.esriTOCControlItemLegendClass)
+                {
+                    ILegendClass pLegend = new LegendClassClass();　　　　　　　　//首先获取图例，然后赋值过去
+                    ISymbol symbol = null;　　　　　　　　　　　　　　　　　　　　//新建 symbol，从符号窗体中最后就是获得这个东西
+                    if (oLegendGroup is ILegendGroup && (int)oIndex != -1)
+                        pLegend = ((ILegendGroup)oLegendGroup).get_Class((int)oIndex) as ILegendClass;　　//给上面建的图例类赋值
+
+                    FormSymbology frm = new FormSymbology(pLegend, pLayer);　　　　　　//新建符号窗体，并将该赋值的赋值过去
+                    frm.ShowDialog();　　　　　　　　　　　　　　　　　　　　　　　　　　　　　//显示对话框，之后就获得了 symbol 了
+                    symbol = frm.pStyleGalleryItem.Item as ISymbol;　　　　　　　　　　　　　　//调用窗体的 public 字段
+                    pLegend.Symbol = symbol;　　　　　　　　　　　　　　　　　　　　　　　　//将 symbol 赋值给图例
+                    axMapControl1.Refresh(esriViewDrawPhase.esriViewGeography, null, null);　　//刷新地图
+                }
+            }
+            else if (e.button == 2) //加载右键菜单
+            {
+                if (pTocItem == esriTOCControlItem.esriTOCControlItemMap)
+                {
+
+                }
+                else if (pTocItem == esriTOCControlItem.esriTOCControlItemLayer)
+                {
+                    pToolMenuLayer.PopupMenu(e.x, e.y, pTocControl.hWnd);
+                    ITOCControl toc = axTOCControl1.Object as ITOCControl;
+                    toc.Update();
+                }
+            }
+        }
         //文本页，添加根目录路径按钮单击事件
         private void btn_AddRootPath_Click(object sender, EventArgs e)
         {
@@ -238,102 +308,14 @@ namespace ConstructionLandEvaluationSystem
         }
         #endregion
 
-        //关闭显示页面
-        private void xtraTabControl2_CloseButtonClick(object sender, EventArgs e)
-        {
-            if (this.xtraTabControl2.SelectedTabPageIndex == 0)
-            {
-                return; //如果是关闭主页，则返回
-            }
-            XtraTabPage tabPage = this.xtraTabControl2.SelectedTabPage;
-            this.xtraTabControl2.SelectedTabPageIndex -= 1;
-            this.xtraTabControl2.TabPages.Remove(tabPage);
-            tabPage.Dispose();
-            GC.Collect();
-        }
-        //根据路径打开文件
-        private void OpenFileByPath(string FilePath)
-        {
-            string ExtName = (System.IO.Path.GetExtension(FilePath)).Replace(".", "").ToLower();
-            int index = LandEvaluationBll.BindingDataTable.GetImageIndexByExtName(ExtName);
-            XtraTabPage tabPage = new XtraTabPage();
-            tabPage.Text = System.IO.Path.GetFileName(FilePath);
-            tabPage.ImageIndex = index;
-            Control fileViewerControl=null;
-            if (index == 1)
-            {
-                RichEditControl richEditControl = new RichEditControl();
-                richEditControl.LoadDocument(FilePath);
-                fileViewerControl = richEditControl;
-            }
-            else if (index == 2)
-            {
-                SpreadsheetControl spreadsheetControl = new SpreadsheetControl();
-                spreadsheetControl.LoadDocument(FilePath);
-                fileViewerControl = spreadsheetControl;
-            }
-            else if (index == 4)
-            {
-                PdfViewer pdfViewer = new PdfViewer();
-                pdfViewer.LoadDocument(FilePath);
-                fileViewerControl = pdfViewer;
-            }
-            else if (index == 5)
-            {
-                PdfViewer pdfViewer = new PdfViewer();
-                pdfViewer.LoadDocument(FilePath);
-                fileViewerControl = pdfViewer;
-            }
-            else if (index == 9)
-            {
-                this.axMapControl1.LoadMxFile(FilePath);
-                this.xtraTabControl2.SelectedTabPageIndex = 0;
-                this.xtraTabControl1.SelectedTabPageIndex = 1;
-                return;
-            }
-            tabPage.Controls.Add(fileViewerControl);
-            fileViewerControl.Dock = DockStyle.Fill;
-            this.xtraTabControl2.TabPages.Add(tabPage);
-            this.xtraTabControl2.SelectedTabPage = tabPage;
-            //this.xtraTabControl2.Refresh();
-        }
-        //TOCControl1鼠标点击事件，左键 符号变更，右键菜单
-        private void axTOCControl1_OnMouseUp(object sender, ITOCControlEvents_OnMouseUpEvent e)
-        {
-            this.axTOCControl1.HitTest(e.x, e.y, ref pTocItem, ref pBasicMap, ref pLayer, ref oLegendGroup, ref oIndex);
-            axMapControl1.CustomProperty = pLayer;
-            if (e.button == 1)  //符号变更
-            {
-                if(pTocItem == esriTOCControlItem.esriTOCControlItemLegendClass)
-                {
-                    ILegendClass pLegend = new LegendClassClass();　　　　　　　　//首先获取图例，然后赋值过去
-                ISymbol symbol = null;　　　　　　　　　　　　　　　　　　　　//新建 symbol，从符号窗体中最后就是获得这个东西
-                if (oLegendGroup is ILegendGroup && (int)oIndex != -1)
-                    pLegend = ((ILegendGroup)oLegendGroup).get_Class((int)oIndex) as ILegendClass;　　//给上面建的图例类赋值
-
-                SymbologyForm frm = new SymbologyForm(pLegend, pLayer);　　　　　　//新建符号窗体，并将该赋值的赋值过去
-                frm.ShowDialog();　　　　　　　　　　　　　　　　　　　　　　　　　　　　　//显示对话框，之后就获得了 symbol 了
-                symbol = frm.pStyleGalleryItem.Item as ISymbol;　　　　　　　　　　　　　　//调用窗体的 public 字段
-                pLegend.Symbol = symbol;　　　　　　　　　　　　　　　　　　　　　　　　//将 symbol 赋值给图例
-                axMapControl1.Refresh(esriViewDrawPhase.esriViewGeography, null, null);　　//刷新地图
-                }
-            }
-            else if (e.button == 2) //加载右键菜单
-            {
-                if (pTocItem == esriTOCControlItem.esriTOCControlItemMap)
-                {
-                    
-                }
-                else if (pTocItem == esriTOCControlItem.esriTOCControlItemLayer)
-                {
-                    pToolMenuLayer.PopupMenu(e.x, e.y, pTocControl.hWnd);
-                    ITOCControl toc = axTOCControl1.Object as ITOCControl;
-                    toc.Update();
-                }
-            }
-        }
+        #region  //鹰眼地图相关
         //axMapControl1地图切换，axMapControl2同步
         private void axMapControl1_OnMapReplaced(object sender, IMapControlEvents2_OnMapReplacedEvent e)
+        {
+            MapControl2MapRefresh();
+        }
+        //axMapControl2地图更新
+        private void MapControl2MapRefresh()
         {
             this.axMapControl2.Map = new MapClass();
             // 添加主地图控件中的所有图层到鹰眼控件中 
@@ -418,5 +400,87 @@ namespace ConstructionLandEvaluationSystem
             this.axMapControl1.CenterAt(pPoint);
             this.axMapControl1.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
         }
+        
+        #endregion
+
+        #region  //空间分析
+        //缓冲区分析
+        private void btn_BufferAnalysis_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
+        {
+            FormBufferAnalysis bufferForm = new FormBufferAnalysis(this.axMapControl1.Object, tempPath);
+            if (bufferForm.ShowDialog() == DialogResult.OK)
+            {
+                //获取输出文件路径
+                string strBufferPath = bufferForm.strOutputPath;
+                //缓冲区图层载入到MapControl
+                int index = strBufferPath.LastIndexOf("\\");
+                this.axMapControl1.AddShapeFile(strBufferPath.Substring(0, index), strBufferPath.Substring(index));
+            }
+        }
+        //叠置分析
+        private void btn_OverlayAnalysis_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
+        {
+            FormOverlayAnalysis overlayForm = new FormOverlayAnalysis(tempPath);
+            if (overlayForm.ShowDialog() == DialogResult.OK)
+            {
+                //获取输出文件路径
+                string strBufferPath = overlayForm.strOutputPath;
+                //输出图层载入到MapControl
+                int index = strBufferPath.LastIndexOf("\\");
+                this.axMapControl1.AddShapeFile(strBufferPath.Substring(0, index), strBufferPath.Substring(index));
+            }
+        }
+        #endregion
+
+        #region 辅助函数
+
+        //根据路径打开文件
+        private void OpenFileByPath(string FilePath)
+        {
+            string ExtName = (System.IO.Path.GetExtension(FilePath)).Replace(".", "").ToLower();
+            int index = LandEvaluationBll.BindingDataTable.GetImageIndexByExtName(ExtName);
+            XtraTabPage tabPage = new XtraTabPage();
+            tabPage.Text = System.IO.Path.GetFileName(FilePath);
+            tabPage.ImageIndex = index;
+            Control fileViewerControl = null;
+            if (index == 1)
+            {
+                RichEditControl richEditControl = new RichEditControl();
+                richEditControl.LoadDocument(FilePath);
+                fileViewerControl = richEditControl;
+            }
+            else if (index == 2)
+            {
+                SpreadsheetControl spreadsheetControl = new SpreadsheetControl();
+                spreadsheetControl.LoadDocument(FilePath);
+                fileViewerControl = spreadsheetControl;
+            }
+            else if (index == 4)
+            {
+                PdfViewer pdfViewer = new PdfViewer();
+                pdfViewer.LoadDocument(FilePath);
+                fileViewerControl = pdfViewer;
+            }
+            else if (index == 5)
+            {
+                PdfViewer pdfViewer = new PdfViewer();
+                pdfViewer.LoadDocument(FilePath);
+                fileViewerControl = pdfViewer;
+            }
+            else if (index == 9)
+            {
+                this.axMapControl1.LoadMxFile(FilePath);
+                this.xtraTabControl2.SelectedTabPageIndex = 0;
+                this.xtraTabControl1.SelectedTabPageIndex = 1;
+                return;
+            }
+            tabPage.Controls.Add(fileViewerControl);
+            fileViewerControl.Dock = DockStyle.Fill;
+            this.xtraTabControl2.TabPages.Add(tabPage);
+            this.xtraTabControl2.SelectedTabPage = tabPage;
+            //this.xtraTabControl2.Refresh();
+        }
+
+        #endregion
     }
 }

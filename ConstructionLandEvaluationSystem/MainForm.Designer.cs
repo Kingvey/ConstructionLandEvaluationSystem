@@ -50,9 +50,13 @@
             this.barButtonGroup_ExtentChange = new DevExpress.XtraBars.BarButtonGroup();
             this.barButtonGroup1 = new DevExpress.XtraBars.BarButtonGroup();
             this.barButtonGroup2 = new DevExpress.XtraBars.BarButtonGroup();
+            this.btn_BufferAnalysis = new DevExpress.XtraBars.BarButtonItem();
+            this.btn_OverlayAnalysis = new DevExpress.XtraBars.BarButtonItem();
             this.ribbonPage_Map = new DevExpress.XtraBars.Ribbon.RibbonPage();
             this.ribbonPageGroup_MapFileOperation = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.ribbonPageGroup_MapBrowsingTools = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
+            this.ribbonPage_SpatialAnalysis = new DevExpress.XtraBars.Ribbon.RibbonPage();
+            this.ribbonPageGroup_AnalysisTool = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.splitContainerControl1 = new DevExpress.XtraEditors.SplitContainerControl();
             this.xtraTabControl1 = new DevExpress.XtraTab.XtraTabControl();
             this.xtraTabPage_Files = new DevExpress.XtraTab.XtraTabPage();
@@ -61,12 +65,16 @@
             this.treeList_FileList = new DevExpress.XtraTreeList.TreeList();
             this.imageList_File = new System.Windows.Forms.ImageList(this.components);
             this.xtraTabPage_Layers = new DevExpress.XtraTab.XtraTabPage();
+            this.axMapControl2 = new ESRI.ArcGIS.Controls.AxMapControl();
             this.axTOCControl1 = new ESRI.ArcGIS.Controls.AxTOCControl();
             this.xtraTabControl2 = new DevExpress.XtraTab.XtraTabControl();
             this.xtraTabPage_DataView = new DevExpress.XtraTab.XtraTabPage();
             this.axMapControl1 = new ESRI.ArcGIS.Controls.AxMapControl();
             this.axLicenseControl1 = new ESRI.ArcGIS.Controls.AxLicenseControl();
-            this.axMapControl2 = new ESRI.ArcGIS.Controls.AxMapControl();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.StatusBlank = new System.Windows.Forms.ToolStripStatusLabel();
+            this.StatusScale = new System.Windows.Forms.ToolStripStatusLabel();
+            this.StatusCoordinate = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)(this.ribbonControl)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerControl1)).BeginInit();
             this.splitContainerControl1.SuspendLayout();
@@ -75,13 +83,14 @@
             this.xtraTabPage_Files.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.treeList_FileList)).BeginInit();
             this.xtraTabPage_Layers.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.axMapControl2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.axTOCControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.xtraTabControl2)).BeginInit();
             this.xtraTabControl2.SuspendLayout();
             this.xtraTabPage_DataView.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axMapControl1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.axLicenseControl1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.axMapControl2)).BeginInit();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // ribbonControl
@@ -107,12 +116,15 @@
             this.barButtonGroup_ZoomChangeFixd,
             this.barButtonGroup_ExtentChange,
             this.barButtonGroup1,
-            this.barButtonGroup2});
+            this.barButtonGroup2,
+            this.btn_BufferAnalysis,
+            this.btn_OverlayAnalysis});
             this.ribbonControl.Location = new System.Drawing.Point(0, 0);
-            this.ribbonControl.MaxItemId = 20;
+            this.ribbonControl.MaxItemId = 22;
             this.ribbonControl.Name = "ribbonControl";
             this.ribbonControl.Pages.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPage[] {
-            this.ribbonPage_Map});
+            this.ribbonPage_Map,
+            this.ribbonPage_SpatialAnalysis});
             this.ribbonControl.Size = new System.Drawing.Size(884, 120);
             this.ribbonControl.ToolbarLocation = DevExpress.XtraBars.Ribbon.RibbonQuickAccessToolbarLocation.Hidden;
             // 
@@ -310,6 +322,24 @@
             this.barButtonGroup2.ItemLinks.Add(this.btn_MapTool_Query);
             this.barButtonGroup2.Name = "barButtonGroup2";
             // 
+            // btn_BufferAnalysis
+            // 
+            this.btn_BufferAnalysis.Caption = "缓冲区分析";
+            this.btn_BufferAnalysis.CategoryGuid = new System.Guid("6ffddb2b-9015-4d97-a4c1-91613e0ef537");
+            this.btn_BufferAnalysis.Id = 20;
+            this.btn_BufferAnalysis.Name = "btn_BufferAnalysis";
+            this.btn_BufferAnalysis.RibbonStyle = DevExpress.XtraBars.Ribbon.RibbonItemStyles.Large;
+            this.btn_BufferAnalysis.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.btn_BufferAnalysis_ItemClick);
+            // 
+            // btn_OverlayAnalysis
+            // 
+            this.btn_OverlayAnalysis.Caption = "叠置分析";
+            this.btn_OverlayAnalysis.CategoryGuid = new System.Guid("6ffddb2b-9015-4d97-a4c1-91613e0ef537");
+            this.btn_OverlayAnalysis.Id = 21;
+            this.btn_OverlayAnalysis.Name = "btn_OverlayAnalysis";
+            this.btn_OverlayAnalysis.RibbonStyle = DevExpress.XtraBars.Ribbon.RibbonItemStyles.Large;
+            this.btn_OverlayAnalysis.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.btn_OverlayAnalysis_ItemClick);
+            // 
             // ribbonPage_Map
             // 
             this.ribbonPage_Map.Groups.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageGroup[] {
@@ -337,7 +367,21 @@
             this.ribbonPageGroup_MapBrowsingTools.ItemLinks.Add(this.barButtonGroup_ExtentChange);
             this.ribbonPageGroup_MapBrowsingTools.ItemLinks.Add(this.barButtonGroup2);
             this.ribbonPageGroup_MapBrowsingTools.Name = "ribbonPageGroup_MapBrowsingTools";
-            this.ribbonPageGroup_MapBrowsingTools.Text = "地图浏览";
+            this.ribbonPageGroup_MapBrowsingTools.Text = "浏览工具";
+            // 
+            // ribbonPage_SpatialAnalysis
+            // 
+            this.ribbonPage_SpatialAnalysis.Groups.AddRange(new DevExpress.XtraBars.Ribbon.RibbonPageGroup[] {
+            this.ribbonPageGroup_AnalysisTool});
+            this.ribbonPage_SpatialAnalysis.Name = "ribbonPage_SpatialAnalysis";
+            this.ribbonPage_SpatialAnalysis.Text = "空间分析";
+            // 
+            // ribbonPageGroup_AnalysisTool
+            // 
+            this.ribbonPageGroup_AnalysisTool.ItemLinks.Add(this.btn_BufferAnalysis);
+            this.ribbonPageGroup_AnalysisTool.ItemLinks.Add(this.btn_OverlayAnalysis);
+            this.ribbonPageGroup_AnalysisTool.Name = "ribbonPageGroup_AnalysisTool";
+            this.ribbonPageGroup_AnalysisTool.Text = "分析工具";
             // 
             // splitContainerControl1
             // 
@@ -445,6 +489,18 @@
             this.xtraTabPage_Layers.Size = new System.Drawing.Size(242, 412);
             this.xtraTabPage_Layers.Text = "图层";
             // 
+            // axMapControl2
+            // 
+            this.axMapControl2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.axMapControl2.Location = new System.Drawing.Point(0, 250);
+            this.axMapControl2.Name = "axMapControl2";
+            this.axMapControl2.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axMapControl2.OcxState")));
+            this.axMapControl2.Size = new System.Drawing.Size(242, 162);
+            this.axMapControl2.TabIndex = 1;
+            this.axMapControl2.OnMouseDown += new ESRI.ArcGIS.Controls.IMapControlEvents2_Ax_OnMouseDownEventHandler(this.axMapControl2_OnMouseDown);
+            this.axMapControl2.OnMouseMove += new ESRI.ArcGIS.Controls.IMapControlEvents2_Ax_OnMouseMoveEventHandler(this.axMapControl2_OnMouseMove);
+            // 
             // axTOCControl1
             // 
             this.axTOCControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -473,6 +529,7 @@
             // 
             // xtraTabPage_DataView
             // 
+            this.xtraTabPage_DataView.Controls.Add(this.statusStrip1);
             this.xtraTabPage_DataView.Controls.Add(this.axMapControl1);
             this.xtraTabPage_DataView.ImageIndex = 9;
             this.xtraTabPage_DataView.Name = "xtraTabPage_DataView";
@@ -487,29 +544,48 @@
             this.axMapControl1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axMapControl1.OcxState")));
             this.axMapControl1.Size = new System.Drawing.Size(625, 410);
             this.axMapControl1.TabIndex = 0;
+            this.axMapControl1.OnMouseMove += new ESRI.ArcGIS.Controls.IMapControlEvents2_Ax_OnMouseMoveEventHandler(this.axMapControl1_OnMouseMove);
             this.axMapControl1.OnExtentUpdated += new ESRI.ArcGIS.Controls.IMapControlEvents2_Ax_OnExtentUpdatedEventHandler(this.axMapControl1_OnExtentUpdated);
             this.axMapControl1.OnMapReplaced += new ESRI.ArcGIS.Controls.IMapControlEvents2_Ax_OnMapReplacedEventHandler(this.axMapControl1_OnMapReplaced);
             // 
             // axLicenseControl1
             // 
             this.axLicenseControl1.Enabled = true;
-            this.axLicenseControl1.Location = new System.Drawing.Point(852, 0);
+            this.axLicenseControl1.Location = new System.Drawing.Point(840, 12);
             this.axLicenseControl1.Name = "axLicenseControl1";
             this.axLicenseControl1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axLicenseControl1.OcxState")));
             this.axLicenseControl1.Size = new System.Drawing.Size(32, 32);
-            this.axLicenseControl1.TabIndex = 1;
+            this.axLicenseControl1.TabIndex = 3;
             // 
-            // axMapControl2
+            // statusStrip1
             // 
-            this.axMapControl2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.axMapControl2.Location = new System.Drawing.Point(0, 250);
-            this.axMapControl2.Name = "axMapControl2";
-            this.axMapControl2.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axMapControl2.OcxState")));
-            this.axMapControl2.Size = new System.Drawing.Size(242, 162);
-            this.axMapControl2.TabIndex = 1;
-            this.axMapControl2.OnMouseDown += new ESRI.ArcGIS.Controls.IMapControlEvents2_Ax_OnMouseDownEventHandler(this.axMapControl2_OnMouseDown);
-            this.axMapControl2.OnMouseMove += new ESRI.ArcGIS.Controls.IMapControlEvents2_Ax_OnMouseMoveEventHandler(this.axMapControl2_OnMouseMove);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.StatusBlank,
+            this.StatusScale,
+            this.StatusCoordinate});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 388);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(625, 22);
+            this.statusStrip1.TabIndex = 1;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // StatusBlank
+            // 
+            this.StatusBlank.Name = "StatusBlank";
+            this.StatusBlank.Size = new System.Drawing.Size(479, 17);
+            this.StatusBlank.Spring = true;
+            // 
+            // StatusScale
+            // 
+            this.StatusScale.Name = "StatusScale";
+            this.StatusScale.Size = new System.Drawing.Size(44, 17);
+            this.StatusScale.Text = "比例尺";
+            // 
+            // StatusCoordinate
+            // 
+            this.StatusCoordinate.Name = "StatusCoordinate";
+            this.StatusCoordinate.Size = new System.Drawing.Size(56, 17);
+            this.StatusCoordinate.Text = "当前坐标";
             // 
             // MainForm
             // 
@@ -531,13 +607,16 @@
             this.xtraTabPage_Files.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.treeList_FileList)).EndInit();
             this.xtraTabPage_Layers.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.axMapControl2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.axTOCControl1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.xtraTabControl2)).EndInit();
             this.xtraTabControl2.ResumeLayout(false);
             this.xtraTabPage_DataView.ResumeLayout(false);
+            this.xtraTabPage_DataView.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axMapControl1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.axLicenseControl1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.axMapControl2)).EndInit();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -556,7 +635,6 @@
         private DevExpress.XtraTab.XtraTabControl xtraTabControl2;
         private DevExpress.XtraTab.XtraTabPage xtraTabPage_DataView;
         private ESRI.ArcGIS.Controls.AxMapControl axMapControl1;
-        private ESRI.ArcGIS.Controls.AxLicenseControl axLicenseControl1;
         private ESRI.ArcGIS.Controls.AxTOCControl axTOCControl1;
         private DevExpress.XtraBars.BarButtonItem btn_AddLayerData;
         private DevExpress.XtraBars.BarButtonItem btn_NewMapDoc;
@@ -581,5 +659,14 @@
         private System.Windows.Forms.ComboBox comboBox_RootPathSelector;
         private System.Windows.Forms.ImageList imageList_File;
         private ESRI.ArcGIS.Controls.AxMapControl axMapControl2;
+        private DevExpress.XtraBars.BarButtonItem btn_BufferAnalysis;
+        private DevExpress.XtraBars.Ribbon.RibbonPage ribbonPage_SpatialAnalysis;
+        private DevExpress.XtraBars.Ribbon.RibbonPageGroup ribbonPageGroup_AnalysisTool;
+        private ESRI.ArcGIS.Controls.AxLicenseControl axLicenseControl1;
+        private DevExpress.XtraBars.BarButtonItem btn_OverlayAnalysis;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel StatusBlank;
+        private System.Windows.Forms.ToolStripStatusLabel StatusScale;
+        private System.Windows.Forms.ToolStripStatusLabel StatusCoordinate;
     }
 }
